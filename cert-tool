@@ -1,0 +1,34 @@
+#!/usr/bin/python
+#
+# Copyright (c) 2016 SUSE LLC
+#
+# This software is licensed to you under the GNU General Public License,
+# version 2 (GPLv2). There is NO WARRANTY for this software, express or
+# implied, including the implied warranties of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. You should have received a copy of GPLv2
+# along with this software; if not, see
+# http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
+
+## language imports
+import sys
+import os
+import string
+
+
+from certTool.certToolCli import get_options
+from certTool.certToolMain import CertTool
+
+options = get_options()
+
+try:
+    sys.exit(CertTool().run(options))
+except KeyboardInterrupt:
+    sys.stderr.write("\nUser interrupted process.\n")
+    sys.exit(0)
+except Exception, ex:
+    sys.stderr.write("General error: {0}\n".format(ex))
+    if options.verbose:
+        raise
+    else:
+        sys.exit(1)
+
