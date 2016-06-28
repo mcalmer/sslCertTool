@@ -1,7 +1,8 @@
+import os
 import socket
 import string
 
-from certTool.certToolLib import normalizePath, getMachineName
+from certTool.certToolLib import normalizePath, getMachineName, rotateFile
 
 BUILD_DIR = normalizePath("./cert-build")
 HOSTNAME = socket.getfqdn()
@@ -24,6 +25,9 @@ BITS   = 2048
 CA_EXPIRE_DAYS = 3650
 CRT_EXPIRE_DAYS = 365
 
+CA_OPENSSL_CNF_NAME = 'ca-openssl.cnf'
+SRV_OPENSSL_CNF_NAME = 'server-openssl.cnf'
+
 OPENSSL_CA_CONF_TEMPLATE = """\
 ###############################################
 # sslCertTool Template for CA Management
@@ -37,7 +41,7 @@ default_ca              = CA_default
 [ CA_default ]
 default_bits            = 2048
 x509_extensions         = v3_ca
-dir                     = {0}
+dir                     = {1}
 database                = $dir/index.txt
 serial                  = $dir/serial
 RANDFILE                = $dir/.rand
@@ -83,7 +87,7 @@ authorityKeyIdentifier=keyid,issuer:always
 
 ###############################################
 [ req_distinguished_name ]
-{1}
+{0}
 """
 
 OPENSSL_SERVER_CONF_TEMPLATE = """\
@@ -121,4 +125,52 @@ subjectAltName          = @alt_names
 {0}
 
 """
+
+def genDistinguishedName(opts):
+    distsect = ""
+    if opts.set_country:
+        distsect += "C                       = %s\n" % opts.set_country
+    if opts.set_state:
+        distsect += "ST                      = %s\n" % opts.set_state
+    if opts.set_city:
+        distsect += "L                       = %s\n" % opts.set_city
+    if opts.set_org:
+        distsect += "O                       = %s\n" % opts.set_org
+    if opts.set_org_unit:
+        distsect += "OU                      = %s\n" % opts.set_org_unit
+    if opts.set_common_name:
+        distsect += "CN                      = %s\n" % opts.set_common_name
+    if opts.set_email:
+        distsect += "emailAddress            = %s\n" % opts.set_email
+    return distsect
+
+def genAltNames(opts):
+    altnames = ""
+    dnsnames = [opts.set_hostname]
+    if opts.add_cname and len(opts.add_cname) > 0:
+        dnsnames.extend(opts.add_cname)
+    idx = 0
+    for name in dnsnames:
+        idx = idx + 1
+        altnames += "DNS.%d = %s\n" %(i, name)
+    return altnames
+
+class OpenSSLConf(object):
+    def __init__(self, filename, template='CA'):
+        self.filename = normalizePath(filename)
+        if template.upper() == 'CA':
+            self.cnf_template = OPENSSL_CA_CONF_TEMPLATE
+            self.is_ca = True
+        else:
+            self.cnf_template = OPENSSL_SERVER_CONF_TEMPLATE
+            self.is_ca = False
+
+    def save(self, opts):
+        rotateFile(path=self.filename)
+        with open(self.filename, 'w') as f:
+            if self.is_ca:
+                f.write(self.cnf_template.format(genDistinguishedName(opts), opts.dir))
+            else:
+                f.write(self.cnf_template.format(genDistinguishedName(opts), genAltNames(opts)))
+        os.chmod(self.filename, 0600)
 
