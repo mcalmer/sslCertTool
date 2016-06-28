@@ -1,13 +1,15 @@
 import os
 import subprocess
 from certToolLib import CertToolException, normalizePath, gendir, getMachineName, \
-        rotateFile
+        rotateFile, fileExists
+from certToolConfig import CA_OPENSSL_CNF_NAME, SRV_OPENSSL_CNF_NAME, OpenSSLConf
 
 class CertTool(object):
     def __init__(self, opts):
         self.genca = False
         self.genserver = False
         self.opts = opts
+        print self.opts
         if opts.which == 'genca':
             self._check_ca_opts()
             self.genca = True
@@ -22,7 +24,7 @@ class CertTool(object):
             self.genCaPrivateKey()
             self.genCaPublicCert()
             self.genCaRpm()
-        if self.genserver:
+        elif self.genserver:
             self.genServerPrivateKey()
             self.genServerPublicCert()
             self.genServerRpm()
@@ -51,14 +53,26 @@ class CertTool(object):
         os.chmod(ca_key, 0600)
 
     def genCaPublicCert(self):
-        pass
+        """ public CA certificate generation """
+        gendir(self.opts.dir)
+        ca_key = os.path.join(self.opts.dir, self.opts.ca_key)
+        ca_crt = os.path.join(self.opts.dir, self.opts.ca_cert)
+        sslconf = os.path.join(self.opts.dir, CA_OPENSSL_CNF_NAME)
+
+        if os.path.exists(ca_crt):
+            raise CertToolException("CA public certificate already exists")
+        fileExists(ca_key)
+
+        if not self.opts.password:
+            raise CertToolException("A CA password must be supplied.")
+        cnf = OpenSSLConf(sslconf)
+        cnf.save(self.opts)
 
     def genCaRpm(self):
         pass
 
     def genServerPrivateKey(self):
         """ private Server key generation """
-        print self.opts
         serverDir = os.path.join(self.opts.dir, getMachineName(self.opts.set_hostname))
         gendir(serverDir)
         server_key = os.path.join(serverDir, self.opts.ca_key)
@@ -85,9 +99,17 @@ class CertTool(object):
 
     def _check_ca_opts(self):
         self.opts.dir = normalizePath(self.opts.dir)
+        if not self.opts.password:
+            raise CertToolException("Password must not be empty")
+        if not self.opts.set_common_name:
+            raise CertToolException("A CA must have a common name")
         return 0
 
     def _check_server_opts(self):
         self.opts.dir = normalizePath(self.opts.dir)
+        if not self.opts.password:
+            raise CertToolException("CA Password must be provided")
+        if not self.opts.set_hostname:
+            raise CertToolException("A Server Certificate must have a hostname")
         return 0
    
