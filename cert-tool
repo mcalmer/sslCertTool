@@ -21,7 +21,7 @@ from certTool.certToolMain import CertTool
 options = get_options()
 
 try:
-    sys.exit(CertTool().run(options))
+    sys.exit(CertTool(options).run())
 except KeyboardInterrupt:
     sys.stderr.write("\nUser interrupted process.\n")
     sys.exit(0)
