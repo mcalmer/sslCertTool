@@ -55,6 +55,9 @@ def rotateFile(path, maxrotate=5):
     shutil.copy2(path, pathSuffix1)
     return pathSuffix1
 
+def fileExists(filename):
+    if not os.path.exists(filename):
+        raise CertToolException("File '%s' does not exist." % filename)
 
 class CertToolException(Exception):
     """ general exception class for the tool """
