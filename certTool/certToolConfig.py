@@ -19,6 +19,7 @@ SERVER_OPENSSL_CNF_NAME = 'server-openssl.cnf'
 
 MD = 'sha256'
 CRYPTO = 'aes256'
+BITS   = 2048
 
 CA_EXPIRE_DAYS = 3650
 CRT_EXPIRE_DAYS = 365

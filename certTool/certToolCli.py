@@ -1,6 +1,7 @@
 
 import argparse
-from certTool.certToolConfig import CA_KEY_NAME, CA_CRT_NAME, CA_EXPIRE_DAYS, CRT_EXPIRE_DAYS, HOSTNAME, BUILD_DIR
+from certTool.certToolConfig import CA_KEY_NAME, CA_CRT_NAME, CA_EXPIRE_DAYS, CRT_EXPIRE_DAYS, \
+        HOSTNAME, BUILD_DIR, MD, CRYPTO, BITS
 
 #MACHINENAME
 
@@ -41,6 +42,7 @@ def _create_genca_subparser(subparsers):
 
     genca_parser = subparsers.add_parser('genca',
                                          help='generate a new CA Certificate')
+    genca_parser.set_defaults(which='genca')
     genca_parser.add_argument(
         '--ca-key', action='store', default=CA_KEY_NAME,
         help='CA private key filename (default: %s)' % CA_KEY_NAME)
@@ -54,13 +56,7 @@ def _create_genca_subparser(subparsers):
         help='expiration of certificate (default: %s days)' % CA_EXPIRE_DAYS)
 
     _append_distinguishing(genca_parser, servercert=False)
-
-    genca_parser.add_argument(
-        '-d', '--dir', action='store', default=BUILD_DIR,
-        help="build directory (default: %s)" % BUILD_DIR)
-    genca_parser.add_argument(
-        '-v', '--verbose', action='store_true', default=False,
-        help="Be verbose")
+    _append_common_options(genca_parser)
 
 
 
@@ -68,7 +64,8 @@ def _create_genserver_subparser(subparsers):
     """ Create the parser for the "genserver" command. """
 
     genserver_parser = subparsers.add_parser('genserver',
-                                         help='generate a new CA Certificate')
+                                             help='generate a new CA Certificate')
+    genserver_parser.set_defaults(which='genserver')
     genserver_parser.add_argument(
         '--server-key', action='store', default='server.key',
         help='Server private key filename (default: server.key)')
@@ -91,11 +88,24 @@ def _create_genserver_subparser(subparsers):
         help='expiration of certificate (default: %s days)' % CRT_EXPIRE_DAYS)
 
     _append_distinguishing(genserver_parser, servercert=True)
+    _append_common_options(genserver_parser)
 
-    genserver_parser.add_argument(
+
+def _append_common_options(parser):
+    parser.add_argument(
+        '--md', action='store', default=MD,
+        help="message digest algorithm (default: %s)" % MD)
+    parser.add_argument(
+        '--crypt', action='store', default=CRYPTO,
+        help="crypto algorithm (default: %s)" % CRYPTO)
+    parser.add_argument(
+        '--bits', action='store', type=int, default=BITS,
+        help="number of bits in the generated key (default: %s)" % BITS)
+
+    parser.add_argument(
         '-d', '--dir', action='store', default=BUILD_DIR,
         help="build directory (default: %s)" % BUILD_DIR)
-    genserver_parser.add_argument(
+    parser.add_argument(
         '-v', '--verbose', action='store_true', default=False,
         help="Be verbose"),
 
@@ -104,8 +114,11 @@ def _append_distinguishing(parser, servercert=False):
 
     if servercert:
         parser.add_argument(
-            '--add-hostname', action='append', default=HOSTNAME,
-            help='Hostname of the server. Can be used multiple times (Default: %s)' % HOSTNAME)
+            '--set-hostname', action='store', default=HOSTNAME,
+            help='Hostname of the server. (Default: %s)' % HOSTNAME)
+        parser.add_argument(
+            '--add-cname', action='append',
+            help='cname of the server. Can be used multiple times.')
     else:
         parser.add_argument(
             '--set-common-name', action='store', help='Common Name')
