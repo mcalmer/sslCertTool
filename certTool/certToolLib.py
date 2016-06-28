@@ -1,5 +1,6 @@
-
+import os
 import string
+import shutil
 import os.path
 
 def normalizePath(path):
@@ -19,4 +20,42 @@ def getMachineName(hostname):
     if len(hn) < 3:
         return hostnamerep
     return string.join(hn[:-2], '.')
+
+def gendir(directory):
+    "makedirs, but only if it doesn't exist first"
+    if not os.path.exists(directory):
+        try:
+            os.makedirs(directory, 0700)
+        except OSError, e:
+            print "Error: %s" % (e, )
+            sys.exit(1)
+
+def rotateFile(path, maxrotate=5):
+    if not path:
+        raise CertToolException("Invalid Argument for path")
+    if not os.path.exists(path):
+        # nothing to do
+        return None
+    pathSuffix = normalizePath(path) + '.'
+    pathSuffix1 = '%s%d' % (pathSuffix, 1)
+
+    # find last in series (of rotations):
+    last = 0
+    while os.path.exists('%s%d' % (pathSuffix, last + 1)):
+        last = last + 1
+
+    # rotate backups
+    for idx in range(last, 0, -1):
+        if idx >= maxrotate:
+            os.unlink('%s%d' % (pathSuffix, idx))
+        else:
+            os.rename('%s%d' % (pathSuffix, idx), '%s%d' % (pathSuffix, idx + 1))
+
+    # rotate the initial file
+    shutil.copy2(path, pathSuffix1)
+    return pathSuffix1
+
+
+class CertToolException(Exception):
+    """ general exception class for the tool """
 
