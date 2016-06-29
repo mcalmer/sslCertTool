@@ -3,7 +3,7 @@ import subprocess
 from certToolLib import CertToolException, normalizePath, gendir, getMachineName, \
         rotateFile, fileExists, initIndexAndSerial, latestRpmEVR, chdir, normalizeAbsPath
 from certToolConfig import CA_OPENSSL_CNF_NAME, SRV_OPENSSL_CNF_NAME, OpenSSLConf, \
-        getCertToolPath, CA_CRT_RPM_NAME
+        getCertToolPath, CA_CRT_RPM_NAME, BASE_SERVER_RPM_NAME
 
 class CertTool(object):
     def __init__(self, opts):
@@ -210,7 +210,49 @@ class CertTool(object):
 
 
     def genServerRpm(self):
-        pass
+        machinename = getMachineName(self.opts.set_hostname)
+        serverDir = os.path.join(self.opts.dir, machinename)
+        gendir(serverDir)
+        server_key = os.path.join(serverDir, self.opts.server_key)
+        server_crt = os.path.join(serverDir, self.opts.server_cert)
+        if self.opts.server_rpm:
+            server_rpm_name = self.opts.server_rpm
+        else:
+            server_rpm_name = BASE_SERVER_RPM_NAME+'-'+machinename
+        #server_cert_rpm = os.path.join(self.opts.dir, server_rpm_name)
+
+        fileExists(server_key)
+        fileExists(server_crt)
+
+        epo, ver, rel = latestRpmEVR(serverDir, server_rpm_name)
+        if rel:
+            rel = str(int(rel)+1)
+
+        description = """
+Server SSL Key and Certificate
+Best practices suggests that this RPM should only be installed on a
+server with this hostnames: %s %s
+""" % (self.opts.set_hostname, " ".join(self.opts.add_cname))
+
+        cmd = [ os.path.join(getCertToolPath(), 'gen-rpm.sh'),
+                '--name', server_rpm_name,
+                '--version', ver,
+                '--release', rel,
+                '--group', 'Productivity/Security',
+                '--summary', 'Server SSL Key and Certificate',
+                '--description', description,
+                '/etc/pki/%s/server.key:0600=%s' % (machinename, normalizeAbsPath(server_key)),
+                '/etc/pki/%s/server.crt=%s' % (machinename, normalizeAbsPath(server_crt))
+                ]
+        cwd = chdir(serverDir)
+        p = subprocess.Popen(cmd,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.STDOUT)
+        stdout_value, stderr_value = p.communicate()
+        chdir(cwd)
+        if p.returncode > 0:
+            raise CertToolException(stdout_value)
+
 
     def _check_ca_opts(self):
         self.opts.dir = normalizePath(self.opts.dir)

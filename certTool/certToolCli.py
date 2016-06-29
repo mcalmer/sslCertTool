@@ -86,6 +86,10 @@ def _create_genserver_subparser(subparsers):
     genserver_parser.add_argument(
         '--cert-expiration', action='store', type=int, default=CRT_EXPIRE_DAYS,
         help='expiration of certificate (default: %s days)' % CRT_EXPIRE_DAYS)
+    genserver_parser.add_argument(
+        '--server-rpm', action='store',
+        help='RPM name that houses the server\'s SSL key and certificate. '
+             + '(the base filename, not filename-version-release.noarch.rpm)')
 
     _append_distinguishing(genserver_parser, servercert=True)
     _append_common_options(genserver_parser)
