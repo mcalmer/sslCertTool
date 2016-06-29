@@ -22,12 +22,14 @@ class CertTool(object):
 
     def run(self):
         if self.genca:
-            self.genCaPrivateKey()
-            self.genCaPublicCert()
+            if not self.opts.rpm_only:
+                self.genCaPrivateKey()
+                self.genCaPublicCert()
             self.genCaRpm()
         elif self.genserver:
-            self.genServerPrivateKey()
-            self.genServerPublicCert()
+            if not self.opts.rpm_only:
+                self.genServerPrivateKey()
+                self.genServerPublicCert()
             self.genServerRpm()
         return 0
 

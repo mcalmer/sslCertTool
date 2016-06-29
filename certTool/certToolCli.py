@@ -91,7 +91,9 @@ def _append_common_options(parser):
     parser.add_argument(
         '--bits', action='store', type=int, default=BITS,
         help="number of bits in the generated key (default: %s)" % BITS)
-
+    parser.add_argument(
+        '--rpm-only', action='store_true', default=False,
+        help="build only the rpm")
     parser.add_argument(
         '-d', '--dir', action='store', default=BUILD_DIR,
         help="build directory (default: %s)" % BUILD_DIR)
