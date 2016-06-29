@@ -1,8 +1,21 @@
 import os
+import glob
+import rpm
 import string
 import shutil
 import subprocess
 import os.path
+
+def chdir(newdir):
+    "chdir with the previous cwd as the return value"
+    cwd = os.getcwd()
+    os.chdir(newdir)
+    return cwd
+
+def normalizeAbsPath(path):
+    if path is None:
+        return None
+    return os.path.abspath(normalizePath(path))
 
 def normalizePath(path):
     return os.path.normpath(
@@ -89,6 +102,32 @@ def initIndexAndSerial(ca_dir, ca_crt):
     next_serial = eval(hex(eval('0x'+ca_serial))) + 1
     with open(serial_file, 'w') as s:
         s.write("%X" % next_serial)
+
+def latestRpmEVR(directory, rpmname):
+    epo, ver, rel = None, '1.0', '0'
+    filenames = glob.glob(os.path.join(directory, "%s-*.noarch.rpm" % rpmname))
+    if not filenames:
+        return epo, ver, rel
+    hdr = [epo, ver, rel]
+    for rpm_file in filenames:
+        cmd = [ 'rpm', '-qp', '--qf',
+                '%{EPOCH}-|_%{VERSION}-|_%{RELEASE}',
+                rpm_file ]
+        p = subprocess.Popen(cmd,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE)
+        stdout_value, stderr_value = p.communicate()
+        if p.returncode > 0:
+            raise CertToolException(repr(stdout_value) + repr(stderr_value))
+        epo, ver, rel = string.split(stdout_value, '-|_')
+        if epo and epo == '(none)':
+            epo = None
+        h = [epo, ver, rel]
+        comp = rpm.labelCompare(h, hdr)
+        if comp > 0:
+            hdr = h
+    return hdr
+
 
 class CertToolException(Exception):
     """ general exception class for the tool """

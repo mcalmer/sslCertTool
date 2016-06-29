@@ -1,8 +1,9 @@
 import os
 import subprocess
 from certToolLib import CertToolException, normalizePath, gendir, getMachineName, \
-        rotateFile, fileExists, initIndexAndSerial
-from certToolConfig import CA_OPENSSL_CNF_NAME, SRV_OPENSSL_CNF_NAME, OpenSSLConf
+        rotateFile, fileExists, initIndexAndSerial, latestRpmEVR, chdir, normalizeAbsPath
+from certToolConfig import CA_OPENSSL_CNF_NAME, SRV_OPENSSL_CNF_NAME, OpenSSLConf, \
+        getCertToolPath, CA_CRT_RPM_NAME
 
 class CertTool(object):
     def __init__(self, opts):
@@ -90,7 +91,35 @@ class CertTool(object):
         gendir(os.path.join(self.opts.dir, 'newcerts'))
 
     def genCaRpm(self):
-        pass
+        gendir(self.opts.dir)
+        ca_crt = os.path.join(self.opts.dir, self.opts.ca_cert)
+        fileExists(ca_crt)
+
+        ca_cert_rpm = os.path.join(self.opts.dir, CA_CRT_RPM_NAME)
+        epo, ver, rel = latestRpmEVR(self.opts.dir, CA_CRT_RPM_NAME)
+        if rel:
+            rel = str(int(rel)+1)
+
+        update_trust_script = os.path.join(getCertToolPath(), "rpmpost-update-ca-trust.sh")
+
+        cmd = [ os.path.join(getCertToolPath(), 'gen-rpm.sh'),
+                '--name', CA_CRT_RPM_NAME,
+                '--version', ver,
+                '--release', rel,
+                '--group', 'Productivity/Security',
+                '--summary', 'Public SSL CA Certificate',
+                '--description', 'Public SSL CA Certificate',
+                '--post', update_trust_script,
+                '--postun', update_trust_script,
+                '/etc/pki/certTool/%s=%s' % (self.opts.ca_cert, normalizeAbsPath(ca_crt))]
+        cwd = chdir(self.opts.dir)
+        p = subprocess.Popen(cmd,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.STDOUT)
+        stdout_value, stderr_value = p.communicate()
+        chdir(cwd)
+        if p.returncode > 0:
+            raise CertToolException(stdout_value)
 
     def genServerPrivateKey(self):
         """ private Server key generation """

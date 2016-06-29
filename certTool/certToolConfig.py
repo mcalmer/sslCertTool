@@ -1,3 +1,4 @@
+import sys
 import os
 import socket
 import string
@@ -128,6 +129,14 @@ subjectAltName          = @alt_names
 {0}
 
 """
+
+def getCertToolPath():
+    GENRPM = 'gen-rpm.sh'
+    for path in sys.path:
+        cert_tool_path = os.path.join(path, "certTool")
+        if os.path.exists(os.path.join(cert_tool_path, GENRPM)):
+            return cert_tool_path
+    raise IOError("Cert Tool Path not found")
 
 def genDistinguishedName(opts):
     distsect = ""
