@@ -50,6 +50,7 @@ default_days            = 3650
 default_md              = default
 policy                  = policy_optional
 copy_extensions         = copy
+unique_subject          = no
 
 [policy_optional]
 countryName             = optional
