@@ -126,7 +126,7 @@ class CertTool(object):
 
     def genServerPrivateKey(self):
         """ private Server key generation """
-        serverDir = os.path.join(self.opts.dir, getMachineName(self.opts.set_hostname))
+        serverDir = os.path.join(self.opts.dir, getMachineName(self.opts.hostname))
         gendir(serverDir)
         server_key = os.path.join(serverDir, self.opts.server_key)
         rotateFile(server_key)
@@ -145,7 +145,7 @@ class CertTool(object):
         os.chmod(server_key, 0600)
 
     def genServerPublicCert(self):
-        serverDir = os.path.join(self.opts.dir, getMachineName(self.opts.set_hostname))
+        serverDir = os.path.join(self.opts.dir, getMachineName(self.opts.hostname))
         gendir(serverDir)
         server_key = os.path.join(serverDir, self.opts.server_key)
         server_req = os.path.join(serverDir, self.opts.server_cert_req)
@@ -213,7 +213,7 @@ class CertTool(object):
 
 
     def genServerRpm(self):
-        machinename = getMachineName(self.opts.set_hostname)
+        machinename = getMachineName(self.opts.hostname)
         serverDir = os.path.join(self.opts.dir, machinename)
         gendir(serverDir)
         server_key = os.path.join(serverDir, self.opts.server_key)
@@ -234,7 +234,7 @@ class CertTool(object):
         description = SRV_RPM_SUMMARY + """
 Best practices suggests that this RPM should only be installed on a
 server with this hostnames: %s %s
-""" % (self.opts.set_hostname, " ".join(self.opts.add_cname or []))
+""" % (self.opts.hostname, " ".join(self.opts.cnames or []))
 
         cmd = [ os.path.join(getCertToolPath(), 'gen-rpm.sh'),
                 '--name', server_rpm_name,
@@ -261,7 +261,7 @@ server with this hostnames: %s %s
         if not self.opts.rpm_only:
             if not self.opts.password:
                 raise CertToolException("Password must not be empty")
-            if not self.opts.set_common_name:
+            if not self.opts.common_name:
                 raise CertToolException("A CA must have a common name")
         return 0
 
@@ -270,10 +270,10 @@ server with this hostnames: %s %s
         if not self.opts.rpm_only:
             if not self.opts.password:
                 raise CertToolException("CA Password must be provided")
-            if not self.opts.set_hostname:
+            if not self.opts.hostname:
                 raise CertToolException("A Server Certificate must have a hostname")
         else:
-            if not self.opts.set_hostname:
+            if not self.opts.hostname:
                 raise CertToolException("Require a machine name. Please set the hostname")
         return 0
 

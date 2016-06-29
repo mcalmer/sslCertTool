@@ -138,33 +138,33 @@ def getCertToolPath():
 
 def genDistinguishedName(opts):
     distsect = ""
-    if opts.set_country:
-        distsect += "C                       = %s\n" % opts.set_country
-    if opts.set_state:
-        distsect += "ST                      = %s\n" % opts.set_state
-    if opts.set_city:
-        distsect += "L                       = %s\n" % opts.set_city
-    if opts.set_org:
-        distsect += "O                       = %s\n" % opts.set_org
-    if opts.set_org_unit:
-        distsect += "OU                      = %s\n" % opts.set_org_unit
-    if 'set_common_name' in opts and opts.set_common_name:
-        distsect += "CN                      = %s\n" % opts.set_common_name
-    elif 'set_hostname' in opts and opts.set_hostname:
-        distsect += "CN                      = %s\n" % opts.set_hostname
-    if opts.set_email:
-        distsect += "emailAddress            = %s\n" % opts.set_email
+    if opts.country:
+        distsect += "C                       = %s\n" % opts.country
+    if opts.state:
+        distsect += "ST                      = %s\n" % opts.state
+    if opts.city:
+        distsect += "L                       = %s\n" % opts.city
+    if opts.org:
+        distsect += "O                       = %s\n" % opts.org
+    if opts.org_unit:
+        distsect += "OU                      = %s\n" % opts.org_unit
+    if 'common_name' in opts and opts.common_name:
+        distsect += "CN                      = %s\n" % opts.common_name
+    elif 'hostname' in opts and opts.hostname:
+        distsect += "CN                      = %s\n" % opts.hostname
+    if opts.email:
+        distsect += "emailAddress            = %s\n" % opts.email
     return distsect
 
 def genAltNames(opts):
     altnames = ""
-    dnsnames = [opts.set_hostname]
-    if opts.add_cname and len(opts.add_cname) > 0:
-        dnsnames.extend(opts.add_cname)
+    dnsnames = [opts.hostname]
+    if opts.cnames and len(opts.cnames) > 0:
+        dnsnames.extend(opts.cnames)
     idx = 0
     for name in dnsnames:
         idx = idx + 1
-        altnames += "DNS.%d = %s\n" %(idx, name)
+        altnames += "DNS.%d = %s\n" % (idx, name)
     return altnames
 
 class OpenSSLConf(object):

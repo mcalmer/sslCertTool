@@ -106,26 +106,26 @@ def _append_distinguishing(parser, servercert=False):
 
     if servercert:
         parser.add_argument(
-            '--set-hostname', action='store', default=HOSTNAME,
+            '--hostname', action='store', default=HOSTNAME,
             help='Hostname of the server. (Default: %s)' % HOSTNAME)
         parser.add_argument(
-            '--add-cname', action='append',
+            '--cname', action='append', dest='cnames',
             help='cname of the server. Can be used multiple times.')
     else:
         parser.add_argument(
-            '--set-common-name', action='store', help='Common Name')
+            '--common-name', action='store', help='Common Name')
     parser.add_argument(
-        '--set-country', action='store', help='2 letter country code (e.g. US or DE)')
+        '--country', action='store', help='2 letter country code (e.g. US or DE)')
     parser.add_argument(
-        '--set-state', action='store', help='state or province')
+        '--state', action='store', help='state or province')
     parser.add_argument(
-        '--set-city', action='store', help='city or locality')
+        '--city', action='store', help='city or locality')
     parser.add_argument(
-        '--set-org', action='store', help='organization or company name')
+        '--org', action='store', help='organization or company name')
     parser.add_argument(
-        '--set-org-unit', action='store', help='organizational unit')
+        '--org-unit', action='store', help='organizational unit')
     parser.add_argument(
-        '--set-email', action='store', help='email address')
+        '--email', action='store', help='email address')
 
 
 def get_options(args=None):
