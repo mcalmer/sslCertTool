@@ -1,6 +1,7 @@
 import os
 import string
 import shutil
+import subprocess
 import os.path
 
 def normalizePath(path):
@@ -58,6 +59,36 @@ def rotateFile(path, maxrotate=5):
 def fileExists(filename):
     if not os.path.exists(filename):
         raise CertToolException("File '%s' does not exist." % filename)
+
+def initIndexAndSerial(ca_dir, ca_crt):
+    fileExists(ca_dir)
+    fileExists(ca_crt)
+    index_file = os.path.join(ca_dir, 'index.txt')
+    if not os.path.exists(index_file):
+        with open(index_file, 'w') as f:
+            f.write("")
+    serial_file = os.path.join(ca_dir, 'serial')
+    if os.path.exists(serial_file):
+        return
+
+    cmd = [ '/usr/bin/openssl', 'x509',
+            '-noout', '-serial',
+            '-in', ca_crt]
+    env = {}
+    p = subprocess.Popen(cmd,
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE,
+                         env=env)
+    stdout_value, stderr_value = p.communicate()
+    if p.returncode > 0:
+        raise CertToolException(repr(stdout_value) + repr(stderr_value))
+    ca_serial = string.split(string.strip(stdout_value), '=')
+    if len(ca_serial) != 2:
+        raise CertToolException("Unable to read CA serial")
+    ca_serial = ca_serial[1]
+    next_serial = eval(hex(eval('0x'+ca_serial))) + 1
+    with open(serial_file, 'w') as s:
+        s.write("%X" % next_serial)
 
 class CertToolException(Exception):
     """ general exception class for the tool """

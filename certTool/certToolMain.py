@@ -1,7 +1,7 @@
 import os
 import subprocess
 from certToolLib import CertToolException, normalizePath, gendir, getMachineName, \
-        rotateFile, fileExists
+        rotateFile, fileExists, initIndexAndSerial
 from certToolConfig import CA_OPENSSL_CNF_NAME, SRV_OPENSSL_CNF_NAME, OpenSSLConf
 
 class CertTool(object):
@@ -9,7 +9,6 @@ class CertTool(object):
         self.genca = False
         self.genserver = False
         self.opts = opts
-        print self.opts
         if opts.which == 'genca':
             self._check_ca_opts()
             self.genca = True
@@ -87,6 +86,8 @@ class CertTool(object):
 
         # permissions:
         os.chmod(ca_crt, 0644)
+        initIndexAndSerial(self.opts.dir, ca_crt)
+        gendir(os.path.join(self.opts.dir, 'newcerts'))
 
     def genCaRpm(self):
         pass
@@ -95,7 +96,7 @@ class CertTool(object):
         """ private Server key generation """
         serverDir = os.path.join(self.opts.dir, getMachineName(self.opts.set_hostname))
         gendir(serverDir)
-        server_key = os.path.join(serverDir, self.opts.ca_key)
+        server_key = os.path.join(serverDir, self.opts.server_key)
         rotateFile(server_key)
         cmd = [ '/usr/bin/openssl', 'genrsa',
                 '-out', server_key,
@@ -112,7 +113,72 @@ class CertTool(object):
         os.chmod(server_key, 0600)
 
     def genServerPublicCert(self):
-        pass
+        serverDir = os.path.join(self.opts.dir, getMachineName(self.opts.set_hostname))
+        gendir(serverDir)
+        server_key = os.path.join(serverDir, self.opts.server_key)
+        server_req = os.path.join(serverDir, self.opts.server_cert_req)
+        server_crt = os.path.join(serverDir, self.opts.server_cert)
+
+        fileExists(server_key)
+        sslconf = os.path.join(serverDir, SRV_OPENSSL_CNF_NAME)
+
+        # gen the request
+        cnf = OpenSSLConf(sslconf, template='server')
+        cnf.save(self.opts)
+
+        rotateFile(path=server_req)
+        cmd = [ '/usr/bin/openssl', 'req',
+                '-%s' % self.opts.md, '-text',
+                '-config', cnf.filename,
+                '-new', '-key', server_key,
+                '-out', server_req]
+        env = {}
+        p = subprocess.Popen(cmd,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.STDOUT,
+                             env=env)
+        stdout_value, stderr_value = p.communicate()
+        if p.returncode > 0:
+            raise CertToolException(repr(stdout_value))
+        # permissions:
+        os.chmod(server_req, 0600)
+
+        # gen the certificate
+        if not self.opts.password:
+            raise CertToolException("A CA password must be supplied.")
+
+        ca_key = os.path.join(self.opts.dir, self.opts.ca_key)
+        ca_crt = os.path.join(self.opts.dir, self.opts.ca_cert)
+        ca_sslconf = os.path.join(self.opts.dir, CA_OPENSSL_CNF_NAME)
+        fileExists(ca_sslconf)
+        fileExists(ca_key)
+        fileExists(ca_crt)
+
+        rotateFile(path=server_crt)
+
+        cmd = [ '/usr/bin/openssl', 'ca',
+                '-extensions', 'v3_server_sign',
+                '-passin', 'env:CERTTOOL_CA_PASSWD',
+                '-config', ca_sslconf,
+                '-in', server_req,
+                '-batch', '-cert', ca_crt,
+                '-keyfile', ca_key,
+                # startdate?
+                '-days', str(self.opts.cert_expiration),
+                '-md', self.opts.md,
+                '-out', server_crt]
+        env = {'CERTTOOL_CA_PASSWD': self.opts.password}
+        p = subprocess.Popen(cmd,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.STDOUT,
+                             env=env)
+        stdout_value, stderr_value = p.communicate()
+        if p.returncode > 0:
+            raise CertToolException(repr(stdout_value))
+
+        # permissions:
+        os.chmod(server_crt, 0644)
+
 
     def genServerRpm(self):
         pass

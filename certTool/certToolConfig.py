@@ -42,12 +42,14 @@ default_ca              = CA_default
 default_bits            = 2048
 x509_extensions         = v3_ca
 dir                     = {1}
+new_certs_dir           = $dir/newcerts
 database                = $dir/index.txt
 serial                  = $dir/serial
 RANDFILE                = $dir/.rand
 default_days            = 3650
 default_md              = default
 policy                  = policy_optional
+copy_extensions         = copy
 
 [policy_optional]
 countryName             = optional
@@ -93,7 +95,7 @@ authorityKeyIdentifier=keyid,issuer:always
 OPENSSL_SERVER_CONF_TEMPLATE = """\
 ###############################################
 
-[req_server]
+[req]
 default_bits            = 2048
 distinguished_name      = req_distinguished_name
 x509_extensions         = v3_server_sign
@@ -138,8 +140,10 @@ def genDistinguishedName(opts):
         distsect += "O                       = %s\n" % opts.set_org
     if opts.set_org_unit:
         distsect += "OU                      = %s\n" % opts.set_org_unit
-    if opts.set_common_name:
+    if 'set_common_name' in opts and opts.set_common_name:
         distsect += "CN                      = %s\n" % opts.set_common_name
+    elif 'set_hostname' in opts and opts.set_hostname:
+        distsect += "CN                      = %s\n" % opts.set_hostname
     if opts.set_email:
         distsect += "emailAddress            = %s\n" % opts.set_email
     return distsect
@@ -152,7 +156,7 @@ def genAltNames(opts):
     idx = 0
     for name in dnsnames:
         idx = idx + 1
-        altnames += "DNS.%d = %s\n" %(i, name)
+        altnames += "DNS.%d = %s\n" %(idx, name)
     return altnames
 
 class OpenSSLConf(object):
