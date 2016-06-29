@@ -68,6 +68,26 @@ class CertTool(object):
         cnf = OpenSSLConf(sslconf)
         cnf.save(self.opts)
 
+        cmd = [ '/usr/bin/openssl', 'req',
+                '-passin', 'env:CERTTOOL_CA_PASSWD',
+                '-text', '-config', cnf.filename,
+                '-new', '-x509',
+                '-days', str(self.opts.cert_expiration),
+                '-%s' % self.opts.md,
+                '-key', ca_key,
+                '-out', ca_crt]
+        env = {'CERTTOOL_CA_PASSWD': self.opts.password}
+        p = subprocess.Popen(cmd,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.STDOUT,
+                             env=env)
+        stdout_value, stderr_value = p.communicate()
+        if p.returncode > 0:
+            raise CertToolException(repr(stdout_value))
+
+        # permissions:
+        os.chmod(ca_crt, 0644)
+
     def genCaRpm(self):
         pass
 
