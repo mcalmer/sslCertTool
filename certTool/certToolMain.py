@@ -258,17 +258,22 @@ server with this hostnames: %s %s
 
     def _check_ca_opts(self):
         self.opts.dir = normalizePath(self.opts.dir)
-        if not self.opts.password:
-            raise CertToolException("Password must not be empty")
-        if not self.opts.set_common_name:
-            raise CertToolException("A CA must have a common name")
+        if not self.opts.rpm_only:
+            if not self.opts.password:
+                raise CertToolException("Password must not be empty")
+            if not self.opts.set_common_name:
+                raise CertToolException("A CA must have a common name")
         return 0
 
     def _check_server_opts(self):
         self.opts.dir = normalizePath(self.opts.dir)
-        if not self.opts.password:
-            raise CertToolException("CA Password must be provided")
-        if not self.opts.set_hostname:
-            raise CertToolException("A Server Certificate must have a hostname")
+        if not self.opts.rpm_only:
+            if not self.opts.password:
+                raise CertToolException("CA Password must be provided")
+            if not self.opts.set_hostname:
+                raise CertToolException("A Server Certificate must have a hostname")
+        else:
+            if not self.opts.set_hostname:
+                raise CertToolException("Require a machine name. Please set the hostname")
         return 0
-   
+
