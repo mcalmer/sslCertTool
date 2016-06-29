@@ -3,20 +3,6 @@ import argparse
 from certTool.certToolConfig import CA_KEY_NAME, CA_CRT_NAME, CA_EXPIRE_DAYS, CRT_EXPIRE_DAYS, \
         HOSTNAME, BUILD_DIR, MD, CRYPTO, BITS
 
-#MACHINENAME
-
-#CA_CRT_RPM_NAME
-
-#BASE_SERVER_RPM_NAME
-#BASE_SERVER_TAR_NAME
-
-#CA_OPENSSL_CNF_NAME
-#SERVER_OPENSSL_CNF_NAME
-
-#MD
-#CRYPTO
-
-
 def _create_parser():
     # create the top-level parser
     parser = argparse.ArgumentParser(

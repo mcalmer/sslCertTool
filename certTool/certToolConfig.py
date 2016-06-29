@@ -7,17 +7,12 @@ from certTool.certToolLib import normalizePath, getMachineName, rotateFile
 
 BUILD_DIR = normalizePath("./cert-build")
 HOSTNAME = socket.getfqdn()
-MACHINENAME = getMachineName(HOSTNAME)
 
 CA_KEY_NAME = 'CA-PRIVATE-SSL-KEY'
 CA_CRT_NAME = 'CA-TRUSTED-SSL-CERT'
 CA_CRT_RPM_NAME = string.lower(CA_CRT_NAME)
 
 BASE_SERVER_RPM_NAME = 'ssl-servercert-key-pair'
-BASE_SERVER_TAR_NAME = 'ssl-servercert-archive'
-
-CA_OPENSSL_CNF_NAME = 'ca-openssl.cnf'
-SERVER_OPENSSL_CNF_NAME = 'server-openssl.cnf'
 
 MD = 'sha256'
 CRYPTO = 'aes256'
