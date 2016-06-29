@@ -232,7 +232,7 @@ class CertTool(object):
         description = SRV_RPM_SUMMARY + """
 Best practices suggests that this RPM should only be installed on a
 server with this hostnames: %s %s
-""" % (self.opts.set_hostname, " ".join(self.opts.add_cname))
+""" % (self.opts.set_hostname, " ".join(self.opts.add_cname or []))
 
         cmd = [ os.path.join(getCertToolPath(), 'gen-rpm.sh'),
                 '--name', server_rpm_name,
