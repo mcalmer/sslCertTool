@@ -3,7 +3,8 @@ import subprocess
 from certToolLib import CertToolException, normalizePath, gendir, getMachineName, \
         rotateFile, fileExists, initIndexAndSerial, latestRpmEVR, chdir, normalizeAbsPath
 from certToolConfig import CA_OPENSSL_CNF_NAME, SRV_OPENSSL_CNF_NAME, OpenSSLConf, \
-        getCertToolPath, CA_CRT_RPM_NAME, BASE_SERVER_RPM_NAME
+        getCertToolPath, CA_CRT_RPM_NAME, BASE_SERVER_RPM_NAME, CA_RPM_SUMMARY, \
+        SRV_RPM_SUMMARY
 
 class CertTool(object):
     def __init__(self, opts):
@@ -107,8 +108,8 @@ class CertTool(object):
                 '--version', ver,
                 '--release', rel,
                 '--group', 'Productivity/Security',
-                '--summary', 'Public SSL CA Certificate',
-                '--description', 'Public SSL CA Certificate',
+                '--summary', CA_RPM_SUMMARY,
+                '--description', CA_RPM_SUMMARY,
                 '--post', update_trust_script,
                 '--postun', update_trust_script,
                 '/etc/pki/certTool/%s=%s' % (self.opts.ca_cert, normalizeAbsPath(ca_crt))]
@@ -228,8 +229,7 @@ class CertTool(object):
         if rel:
             rel = str(int(rel)+1)
 
-        description = """
-Server SSL Key and Certificate
+        description = SRV_RPM_SUMMARY + """
 Best practices suggests that this RPM should only be installed on a
 server with this hostnames: %s %s
 """ % (self.opts.set_hostname, " ".join(self.opts.add_cname))
@@ -239,7 +239,7 @@ server with this hostnames: %s %s
                 '--version', ver,
                 '--release', rel,
                 '--group', 'Productivity/Security',
-                '--summary', 'Server SSL Key and Certificate',
+                '--summary', SRV_RPM_SUMMARY,
                 '--description', description,
                 '/etc/pki/%s/server.key:0600=%s' % (machinename, normalizeAbsPath(server_key)),
                 '/etc/pki/%s/server.crt=%s' % (machinename, normalizeAbsPath(server_crt))

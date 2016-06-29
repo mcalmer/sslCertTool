@@ -24,6 +24,9 @@ CRT_EXPIRE_DAYS = 365
 CA_OPENSSL_CNF_NAME = 'ca-openssl.cnf'
 SRV_OPENSSL_CNF_NAME = 'server-openssl.cnf'
 
+CA_RPM_SUMMARY = 'Public SSL CA Certificate'
+SRV_RPM_SUMMARY = 'Server SSL Key and Certificate'
+
 OPENSSL_CA_CONF_TEMPLATE = """\
 ###############################################
 # sslCertTool Template for CA Management
