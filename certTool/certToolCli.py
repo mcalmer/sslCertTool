@@ -42,7 +42,7 @@ def _create_genserver_subparser(subparsers):
     """ Create the parser for the "genserver" command. """
 
     genserver_parser = subparsers.add_parser('genserver',
-                                             help='generate a new CA Certificate')
+                                             help='generate a new Server Certificate')
     genserver_parser.set_defaults(which='genserver')
     genserver_parser.add_argument(
         '--server-key', action='store', default='server.key',
