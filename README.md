@@ -1,6 +1,6 @@
 sslCertTool: A Tool for generating SSL Certificates
 ===================================================
-
+```
 usage: cert-tool [-h] [--version] {genca,genserver} ...
 
 Generate SSL Certificates
@@ -95,6 +95,7 @@ optional arguments:
   --rpm-only            build only the rpm
   -d DIR, --dir DIR     build directory (default: cert-build)
   -v, --verbose         Be verbose
+```
 
 Examples:
 ---------
