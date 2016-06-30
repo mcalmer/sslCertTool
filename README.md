@@ -59,7 +59,9 @@ optional arguments:
 
 The **genserver** subcommand create a server private key and certificate.
 The Server Certificate and Key is packaged into a rpm with the name
-```ssl-servercert-key-pair-<machinename>-<version>-<release>.noarch.rpm```.
+```
+ssl-servercert-key-pair-<machinename>-<version>-<release>.noarch.rpm
+```.
 The RPM will install the Files to
 ```
 /etc/pki/<machinename>/server.crt
