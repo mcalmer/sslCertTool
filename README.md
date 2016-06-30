@@ -13,8 +13,15 @@ Subcommands:
   {genca,genserver}
     genca            generate a new CA Certificate
     genserver        generate a new Server Certificate
+```
 
+The **genca** subcommand create a CA private key and certificate. The
+CA Certificate is packaged into a rpm with the name ```ca-trusted-ssl-cert-<version>-<release>.noarch.rpm```.
+This RPM will install the CA to ```/etc/pki/certTool/CA-TRUSTED-SSL-CERT``` and
+the RPM post script link it into the directory of CA certificate trust anchors and call the
+update tools to update the system certificate stores.
 
+```
 usage: cert-tool genca [-h] [--cert-expiration CERT_EXPIRATION]
                        [--common-name COMMON_NAME] [--country COUNTRY]
                        [--state STATE] [--city CITY] [--org ORG]
@@ -50,11 +57,14 @@ optional arguments:
   -v, --verbose         Be verbose
 ```
 
-The **genca** subcommand create a CA private key and certificate. The
-CA Certificate is packaged into a rpm with the name **ca-trusted-ssl-cert-<version>-<release>.noarch.rpm**.
-This RPM will install the CA to ```/etc/pki/certTool/CA-TRUSTED-SSL-CERT``` and
-the RPM post script link it into the directory of CA certificate trust anchors and call the
-update tools to update the system certificate stores.
+The **genserver** subcommand create a server private key and certificate.
+The Server Certificate and Key is packaged into a rpm with the name
+```ssl-servercert-key-pair-<machinename>-<version>-<release>.noarch.rpm```.
+The RPM will install the Files to
+```
+/etc/pki/<machinename>/server.crt
+/etc/pki/<machinename>/server.key
+```
 
 ```
 usage: cert-tool genserver [-h] [--server-key SERVER_KEY]
@@ -107,14 +117,6 @@ optional arguments:
   -v, --verbose         Be verbose
 ```
 
-The **genserver** subcommand create a server private key and certificate.
-The Server Certificate and Key is packaged into a rpm with the name
-**ssl-servercert-key-pair-<machinename>-<version>-<release>.noarch.rpm**.
-The RPM will install the Files to
-```
-/etc/pki/<machinename>/server.crt
-/etc/pki/<machinename>/server.key
-```
 
 Examples:
 ---------
