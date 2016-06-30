@@ -13,7 +13,9 @@ This Tool help to create SSL Certificates
       author = 'Michael Calmer',
       author_email = 'Michael.Calmer@suse.com',
       url = 'https://github.com/mcalmer/sslCertTool',
-      py_modules = ["certTool"],
+      packages = ["certTool"],
+      scripts=['cert-tool'],
+      package_data={'certTool': ['*.sh']},
       license = "GPLv2",
       )
 
