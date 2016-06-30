@@ -26,15 +26,20 @@ Source:         %{name}.tar.gz
 BuildRequires:  python
 BuildRequires:  python-setuptools
 # for testing
-BuildRequires:  openssl rpm-python
+BuildRequires:  openssl rpm-python python-argparse
 %if 0%{?suse_version}
 %py_requires
 %endif
 Requires:       openssl
 Requires:       rpm-build
 Requires:       rpm-python
-BuildArch:      noarch
+Requires:       python-argparse
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+%if 0%{?suse_version} && 0%{?suse_version} <= 1110
+%{!?python_sitelib: %global python_sitelib %(python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
+%else
+BuildArch:      noarch
+%endif
 
 %description
 A Tool for generating SSL Certificates.
