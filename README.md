@@ -36,9 +36,10 @@ optional arguments:
   --org-unit ORG_UNIT   organizational unit
   --email EMAIL         email address
   -p PASSWORD, --password PASSWORD
-                        CA password. Either the password itself or via
-                        enviroment variable defined by "env:<VAR_NAME>". If
-                        omitted, the tool will ask for it.
+                        CA password. (not secure)
+  --env-passwd ENV_PASSWD
+                        Environment variable name to read the CA Password
+                        from.
   --ca-key CA_KEY       CA private key filename (default: CA-PRIVATE-SSL-KEY)
   --ca-cert CA_CERT     CA certificate filename (default: CA-TRUSTED-SSL-CERT)
   --md MD               message digest algorithm (default: sha256)
@@ -47,7 +48,15 @@ optional arguments:
   --rpm-only            build only the rpm
   -d DIR, --dir DIR     build directory (default: cert-build)
   -v, --verbose         Be verbose
+```
 
+The **genca** subcommand create a CA private key and certificate. The
+CA Certificate is packaged into a rpm with the name **ca-trusted-ssl-cert-<version>-<release>.noarch.rpm**.
+This RPM will install the CA to ```/etc/pki/certTool/CA-TRUSTED-SSL-CERT``` and
+the RPM post script link it into the directory of CA certificate trust anchors and call the
+update tools to update the system certificate stores.
+
+```
 usage: cert-tool genserver [-h] [--server-key SERVER_KEY]
                            [--server-cert SERVER_CERT]
                            [--server-cert-req SERVER_CERT_REQ]
@@ -75,7 +84,7 @@ optional arguments:
                         RPM name that houses the server's SSL key and
                         certificate. (the base filename, not filename-version-
                         release.noarch.rpm)
-  --hostname HOSTNAME   Hostname of the server. (Default: lesch.suse.de)
+  --hostname HOSTNAME   Hostname of the server. (Default: hocalhost.domain.top)
   --cname CNAMES        cname of the server. Can be used multiple times.
   --country COUNTRY     2 letter country code (e.g. US or DE)
   --state STATE         state or province
@@ -84,9 +93,10 @@ optional arguments:
   --org-unit ORG_UNIT   organizational unit
   --email EMAIL         email address
   -p PASSWORD, --password PASSWORD
-                        CA password. Either the password itself or via
-                        enviroment variable defined by "env:<VAR_NAME>". If
-                        omitted, the tool will ask for it.
+                        CA password. (not secure)
+  --env-passwd ENV_PASSWD
+                        Environment variable name to read the CA Password
+                        from.
   --ca-key CA_KEY       CA private key filename (default: CA-PRIVATE-SSL-KEY)
   --ca-cert CA_CERT     CA certificate filename (default: CA-TRUSTED-SSL-CERT)
   --md MD               message digest algorithm (default: sha256)
@@ -95,6 +105,15 @@ optional arguments:
   --rpm-only            build only the rpm
   -d DIR, --dir DIR     build directory (default: cert-build)
   -v, --verbose         Be verbose
+```
+
+The **genserver** subcommand create a server private key and certificate.
+The Server Certificate and Key is packaged into a rpm with the name
+**ssl-servercert-key-pair-<machinename>-<version>-<release>.noarch.rpm**.
+The RPM will install the Files to
+```
+/etc/pki/<machinename>/server.crt
+/etc/pki/<machinename>/server.key
 ```
 
 Examples:
@@ -113,7 +132,7 @@ $> cert-tool genserver -p secret --hostname "www.domain.top" --org "My Company" 
 Generate a Server Certificate with multiple cnames and provide the password via environment.
 
 ```
-$> MY_CA_PASSWD=secret cert-tool genserver -p "env:MY_CA_PASSWD" --hostname "www.domain.top" --org "My Company" \
+$> MY_CA_PASSWD=secret cert-tool genserver --env-passwd "MY_CA_PASSWD" --hostname "www.domain.top" --org "My Company" \
    --email "me@domain.top" --country "US" --cname "host1.domain.top" --cname "host2.domain.top"
 ```
 
