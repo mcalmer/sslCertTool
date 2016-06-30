@@ -1,5 +1,8 @@
 import os
 import subprocess
+import getpass
+import re
+import string
 from certToolLib import CertToolException, normalizePath, gendir, getMachineName, \
         rotateFile, fileExists, initIndexAndSerial, latestRpmEVR, chdir, normalizeAbsPath
 from certToolConfig import CA_OPENSSL_CNF_NAME, SRV_OPENSSL_CNF_NAME, OpenSSLConf, \
@@ -260,7 +263,9 @@ server with this hostnames: %s %s
         self.opts.dir = normalizePath(self.opts.dir)
         if not self.opts.rpm_only:
             if not self.opts.password:
-                raise CertToolException("Password must not be empty")
+                self._get_password(with_confirm=True)
+            elif self.opts.password.startswith('env:'):
+                self._get_password_from_env()
             if not self.opts.common_name:
                 raise CertToolException("A CA must have a common name")
         return 0
@@ -269,7 +274,9 @@ server with this hostnames: %s %s
         self.opts.dir = normalizePath(self.opts.dir)
         if not self.opts.rpm_only:
             if not self.opts.password:
-                raise CertToolException("CA Password must be provided")
+                self._get_password()
+            elif self.opts.password.startswith('env:'):
+                self._get_password_from_env()
             if not self.opts.hostname:
                 raise CertToolException("A Server Certificate must have a hostname")
         else:
@@ -277,3 +284,28 @@ server with this hostnames: %s %s
                 raise CertToolException("Require a machine name. Please set the hostname")
         return 0
 
+    def _get_password(self, with_confirm=False):
+        while not self.opts.password:
+            pw = _pw = None
+            while not pw:
+                pw = getpass.getpass("CA password: ")
+            if with_confirm:
+                while not _pw:
+                    _pw = getpass.getpass("CA password confirmation: ")
+                if pw != _pw:
+                    print "Passwords do not match.\n"
+                    pw = None
+            self.opts.password = pw
+        return self.opts.password
+
+    def _get_password_from_env(self):
+        if re.search(r"""^env:[0-9A-Z_]+$""", self.opts.password) is None:
+            # password does not match environment syntax
+            # so with use the string as password
+            return
+        pw = string.split(self.opts.password, ':')
+        self.opts.password = None
+        if pw[1] in os.environ:
+            self.opts.password = os.environ[pw[1]]
+        if not self.opts.password:
+            raise CertToolException("Unable to read password from environment")
