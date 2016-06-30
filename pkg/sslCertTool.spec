@@ -31,15 +31,15 @@ BuildRequires:  openssl rpm-python python-argparse
 %py_requires
 %endif
 Requires:       openssl
-Requires:       rpm-build
 Requires:       rpm-python
 Requires:       python-argparse
-BuildRoot:      %{_tmppath}/%{name}-%{version}-build
-%if 0%{?suse_version} && 0%{?suse_version} <= 1110
-%{!?python_sitelib: %global python_sitelib %(python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
-%else
+%if 0%{?suse_version} >= 1220
+Requires:       rpm-build
 BuildArch:      noarch
+%else
+%{!?python_sitelib: %global python_sitelib %(python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 %endif
+BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 
 %description
 A Tool for generating SSL Certificates.
