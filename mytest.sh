@@ -18,9 +18,9 @@ rm -rf $TESTDIR3/
 cert-tool genca -d $TESTDIR1 -p hallo --common-name "SUSE CA" --state Bavaria --city Nuremberg --org "SUSE LLC" --email "suse@suse.com" --country "DE" -v --bits 4096 --cert-expiration 7000 --md sha512 || error
 cert-tool genserver -d $TESTDIR1 -p hallo --hostname "lesch.suse.de" --state Bavaria --city Nuremberg --org "SUSE LLC" --email "suse@suse.com" --country "DE" -v --bits 4096 --cert-expiration 700 --md sha512 --cname "www.suse.de" || error
 
-cert-tool genserver -d $TESTDIR1 -p "env:CA_PASSWD" --hostname "lesch.suse.de" --state Bavaria --city Nuremberg --org "SUSE LLC" --email "suse@suse.com" --country "DE" -v --bits 4096 --cert-expiration 700 --md sha512 --cname "www.suse.de" --cname "w3.suse.de" 2>&1 | grep "Unable to read password from environment" >/dev/null || error
+cert-tool genserver -d $TESTDIR1 --env-passwd "CA_PASSWD" --hostname "lesch.suse.de" --state Bavaria --city Nuremberg --org "SUSE LLC" --email "suse@suse.com" --country "DE" -v --bits 4096 --cert-expiration 700 --md sha512 --cname "www.suse.de" --cname "w3.suse.de" 2>&1 | grep "Unable to read password from environment" >/dev/null || error
 
-CA_PASSWD=hallo cert-tool genserver -d $TESTDIR1 -p "env:CA_PASSWD" --hostname "lesch.suse.de" --state Bavaria --city Nuremberg --org "SUSE LLC" --email "suse@suse.com" --country "DE" -v --bits 4096 --cert-expiration 700 --md sha512 --cname "www.suse.de" --cname "w3.suse.de" || error
+CA_PASSWD=hallo cert-tool genserver -d $TESTDIR1 --env-passwd "CA_PASSWD" --hostname "lesch.suse.de" --state Bavaria --city Nuremberg --org "SUSE LLC" --email "suse@suse.com" --country "DE" -v --bits 4096 --cert-expiration 700 --md sha512 --cname "www.suse.de" --cname "w3.suse.de" || error
 
 test -f $TESTDIR1/CA-PRIVATE-SSL-KEY || error
 test -f $TESTDIR1/CA-TRUSTED-SSL-CERT || error
