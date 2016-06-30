@@ -262,10 +262,10 @@ server with this hostnames: %s %s
     def _check_ca_opts(self):
         self.opts.dir = normalizePath(self.opts.dir)
         if not self.opts.rpm_only:
-            if not self.opts.password:
-                self._get_password(with_confirm=True)
-            elif self.opts.password.startswith('env:'):
+            if self.opts.env_passwd:
                 self._get_password_from_env()
+            elif not self.opts.password:
+                self._get_password(with_confirm=True)
             if not self.opts.common_name:
                 raise CertToolException("A CA must have a common name")
         return 0
@@ -273,10 +273,10 @@ server with this hostnames: %s %s
     def _check_server_opts(self):
         self.opts.dir = normalizePath(self.opts.dir)
         if not self.opts.rpm_only:
-            if not self.opts.password:
-                self._get_password()
-            elif self.opts.password.startswith('env:'):
+            if self.opts.env_passwd:
                 self._get_password_from_env()
+            elif not self.opts.password:
+                self._get_password()
             if not self.opts.hostname:
                 raise CertToolException("A Server Certificate must have a hostname")
         else:
@@ -299,13 +299,8 @@ server with this hostnames: %s %s
         return self.opts.password
 
     def _get_password_from_env(self):
-        if re.search(r"""^env:[0-9A-Z_]+$""", self.opts.password) is None:
-            # password does not match environment syntax
-            # so with use the string as password
-            return
-        pw = string.split(self.opts.password, ':')
         self.opts.password = None
-        if pw[1] in os.environ:
-            self.opts.password = os.environ[pw[1]]
+        if self.opts.env_passwd in os.environ:
+            self.opts.password = os.environ[self.opts.env_passwd]
         if not self.opts.password:
             raise CertToolException("Unable to read password from environment")

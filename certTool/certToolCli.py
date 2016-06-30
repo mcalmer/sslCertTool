@@ -67,8 +67,9 @@ def _create_genserver_subparser(subparsers):
 
 def _append_common_options(parser):
     parser.add_argument(
-        '-p', '--password', action='store', help='CA password. Either the password itself or via '
-        + 'enviroment variable defined by "env:<VAR_NAME>". If omitted, the tool will ask for it.')
+        '-p', '--password', action='store', help='CA password. (not secure)')
+    parser.add_argument(
+        '--env-passwd', action='store', help='Environment variable name to read the CA Password from.')
     parser.add_argument(
         '--ca-key', action='store', default=CA_KEY_NAME,
         help='CA private key filename (default: %s)' % CA_KEY_NAME)
