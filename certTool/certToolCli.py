@@ -30,14 +30,6 @@ def _create_genca_subparser(subparsers):
                                          help='generate a new CA Certificate')
     genca_parser.set_defaults(which='genca')
     genca_parser.add_argument(
-        '--ca-key', action='store', default=CA_KEY_NAME,
-        help='CA private key filename (default: %s)' % CA_KEY_NAME)
-    genca_parser.add_argument(
-        '--ca-cert', action='store', default=CA_CRT_NAME,
-        help='CA certificate filename (default: %s)' % CA_CRT_NAME)
-    genca_parser.add_argument(
-        '-p', '--password', action='store', help='CA password')
-    genca_parser.add_argument(
         '--cert-expiration', action='store', type=int, default=CA_EXPIRE_DAYS,
         help='expiration of certificate (default: %s days)' % CA_EXPIRE_DAYS)
 
@@ -62,14 +54,6 @@ def _create_genserver_subparser(subparsers):
         '--server-cert-req', action='store', default='server.csr',
         help='Server certificate request filename (default: server.csr)')
     genserver_parser.add_argument(
-        '--ca-key', action='store', default=CA_KEY_NAME,
-        help='CA private key filename (default: %s)' % CA_KEY_NAME)
-    genserver_parser.add_argument(
-        '--ca-cert', action='store', default=CA_CRT_NAME,
-        help='CA certificate filename (default: %s)' % CA_CRT_NAME)
-    genserver_parser.add_argument(
-        '-p', '--password', action='store', help='CA password')
-    genserver_parser.add_argument(
         '--cert-expiration', action='store', type=int, default=CRT_EXPIRE_DAYS,
         help='expiration of certificate (default: %s days)' % CRT_EXPIRE_DAYS)
     genserver_parser.add_argument(
@@ -82,6 +66,15 @@ def _create_genserver_subparser(subparsers):
 
 
 def _append_common_options(parser):
+    parser.add_argument(
+        '-p', '--password', action='store', help='CA password. Either the password itself or via '
+        + 'enviroment variable defined by "env:<VAR_NAME>". If omitted, the tool will ask for it.')
+    parser.add_argument(
+        '--ca-key', action='store', default=CA_KEY_NAME,
+        help='CA private key filename (default: %s)' % CA_KEY_NAME)
+    parser.add_argument(
+        '--ca-cert', action='store', default=CA_CRT_NAME,
+        help='CA certificate filename (default: %s)' % CA_CRT_NAME)
     parser.add_argument(
         '--md', action='store', default=MD,
         help="message digest algorithm (default: %s)" % MD)
